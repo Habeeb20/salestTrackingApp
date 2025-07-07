@@ -4,7 +4,7 @@ export interface IUser extends Document {
   _id: Types.ObjectId; 
   email: string;
   password: string;
-  role: 'sales_rep' | 'manager';
+  role: 'client' | 'event planner';
   createdAt: Date;
   updatedAt: Date;
 
@@ -16,7 +16,7 @@ const UserSchema: Schema = new Schema<IUser>(
   {
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
-    role: { type: String, enum: ['sales_rep', 'manager'], required: true },
+    role: { type: String, enum: ['client', 'event planner'], required: true },
     resetPasswordToken: { type: String }, 
     resetPasswordExpires: { type: Date },
     
