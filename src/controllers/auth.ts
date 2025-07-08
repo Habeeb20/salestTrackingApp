@@ -5,6 +5,7 @@ import jwt from "jsonwebtoken"
 import User, { IUser } from "../models/user";
 import nodemailer from "nodemailer"
 import crypto from "crypto"
+import { sendOTPEmail } from "../funtion";
 interface LoginBody {
   email: string;
   password: string;
@@ -25,17 +26,116 @@ export const signup = async(req:Request, res:Response):Promise<void> => {
             }
 
             const hashedPassword = await bcrypt.hash(password, 10)
+
+            const verificationToken = Math.floor(
+              100000 + Math.random()  * 900000
+            ).toString()
+            const uniqueNumber = `RL-${crypto
+            .randomBytes(3)
+            .toString('hex')
+            .toUpperCase()}`;
+            const verificationTokenExpiresAt = Date.now() + 24 * 60 * 60 * 1000;
             const newUser = new User({
-                email, role, password:hashedPassword
+                email, role, password:hashedPassword,    verificationToken,
+          verificationTokenExpiresAt,
+          uniqueNumber,
             })
 
             await newUser.save()
-            res.status(200).json({message: 'successfully saved'})      
+            res.status(200).json({message: 'successfully saved', role: newUser.role, email:newUser.email})      
             
         } catch (error){
             console.log(error)
             res.status(500).json({message: "an error occurred"})
         }
+}
+
+export const verifyEmail = async(req: Request, res:Response):Promise<void> => {
+     const errors = validationResult(req)
+    if(!errors.isEmpty()) res.status(400).json({error: errors.array()})
+
+try {
+  
+      const {email, code} = req.body as {email: string, code: string}
+     console.log("lets verify this", {email, code})
+
+
+     const user : IUser | null = await User.findOne({
+          email,
+          verificationToken: code,
+          verificationTokenExpiresAt: { $gt: Date.now() },
+     })
+     if(!user){
+      res.status(404).json({message: "user not found"})
+      return
+     }
+
+       user.isVerified = true;
+       user.verificationToken = undefined;
+       user.verificationTokenExpiresAt = undefined;
+
+        await user.save();
+
+        const payload = {user: {id:user._id}}
+        const token = jwt.sign(payload, process.env.JWT_SECRET as string, {expiresIn: '7d'})
+    
+   res.json({
+          success: true,
+          message: "Email verified successfully",
+          token,
+          user: { id: user._id, email: user.email, isVerified: true, role:user.role },
+        });
+} catch (error) {
+    console.error("Email verification error:", error);
+        res
+          .status(500)
+          .json({ status: false, message: error || "Server error occurred" });
+      
+}
+     
+}
+
+
+export const sendOtp = async(req:Request, res:Response):Promise<void> => {
+  try {
+      const {email} = req.body as {email: string}
+
+       console.log("Resending OTP for email:", email);
+
+       const user: IUser | null = await User.findOne({email})
+       if(!user){
+        res.status(404).json({message: "user not found"})
+        return
+       }
+
+         const verificationToken = Math.floor(
+          100000 + Math.random() * 900000
+        ).toString();
+        const verificationTokenExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    
+        user.verificationToken = verificationToken;
+        user.verificationTokenExpiresAt = verificationTokenExpiresAt;
+        await user.save();
+
+            const response = await sendOTPEmail(
+          email,
+          verificationToken,
+          user.role
+        );
+    if(!response.success){
+      console.log("an error occurred whike sending email")
+      res.status(400).json({message: "an error occurred"})
+      return
+
+    }
+       res.json({
+          status: true,
+          message: "Verification code resent successfully",
+        });
+  } catch (error) {
+            console.error("Send OTP error:", error);
+        res.status(500).json({ status: false, message: "Server error occurred" });
+  }
 }
 
 export const login = async (

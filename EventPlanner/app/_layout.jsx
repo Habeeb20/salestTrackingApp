@@ -46,6 +46,17 @@ export default function Layout() {
           headerShadowVisible: false,
         }}
       />
+
+      <Stack.Screen name='verifyemail' options={{
+        title:'Verify your email', 
+        headerStyle:{backgroundColor:'#1C2526',
+          headerTitleStyle: { fontSize: 28, fontWeight: 'bold', color: '#87BCFF' },
+          headerTintColor: '#87BCFF',
+          headerTitleAlign: 'center',
+          headerShadowVisible: false,
+
+         }}}
+         />
     </Stack>
   );
 }

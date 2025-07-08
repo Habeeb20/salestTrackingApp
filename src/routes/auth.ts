@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { check } from "express-validator";
-import { ForgotPassword, login, resetPassword, signup } from "../controllers/auth";
+import { ForgotPassword, login, resetPassword, sendOtp, signup, verifyEmail } from "../controllers/auth";
 
 
 const router = Router()
@@ -11,6 +11,13 @@ router.post("/register",  [
 ], signup)
 
 
+router.post("/verify-email", [
+  check('code', )
+], verifyEmail)
+
+router.post("/send-otp", [
+  check('email', "please enter the email" ).isEmail()
+], sendOtp)
 
 router.post('/login', [
     check('email', 'enter a valid email').isEmail(),
