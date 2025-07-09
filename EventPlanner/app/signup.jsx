@@ -398,7 +398,8 @@ export default function SignupScreen() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#1C2526' }}>
+    <AlertNotificationRoot>
+         <SafeAreaView style={{ flex: 1, backgroundColor: '#1C2526' }}>
       <View style={{ padding: 24, paddingTop: 40 }}>
         <View style={{ alignItems: 'center', marginBottom: 24 }}>
           <Animated.View
@@ -576,5 +577,8 @@ export default function SignupScreen() {
         </Pressable>
       </View>
     </SafeAreaView>
+
+    </AlertNotificationRoot>
+ 
   );
 }

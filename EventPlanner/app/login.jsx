@@ -6,6 +6,7 @@ import Animated, { useSharedValue, useAnimatedStyle, withTiming, Easing, withRep
 import { MaterialIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import api from "./api"
+import { ALERT_TYPE, AlertNotificationRoot, Toast } from 'react-native-alert-notification';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
@@ -36,8 +37,14 @@ export default function LoginScreen() {
       const response = await api.post('/api/auth/login', { email, password });
       await AsyncStorage.setItem('token', response.data.token);
       await AsyncStorage.setItem('user', JSON.stringify(response.data.user));
+      await AsyncStorage.setItem('role', JSON.stringify(response.data.user.role));
       console.log('Login successful:', response.data);
-      router.push('/');
+        Toast.show({
+        type: ALERT_TYPE.SUCCESS,
+        title: 'Success',
+        text: 'Successfully signed up, please log in',
+      });
+      router.push('/userdashboard');
     } catch (err) {
       setError(err.response?.data?.error || 'Login failed');
     }
@@ -47,7 +54,8 @@ export default function LoginScreen() {
 
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor:'#1C2526' }}>
+    <AlertNotificationRoot>
+        <SafeAreaView style={{ flex: 1, backgroundColor:'#1C2526' }}>
       <View style={{ padding: 24, paddingTop: 40 }}>
         <View style={{ alignItems: 'center', marginBottom: 104 }}>
           <Animated.View
@@ -186,5 +194,8 @@ export default function LoginScreen() {
         </Pressable>
       </View>
     </SafeAreaView>
+
+    </AlertNotificationRoot>
+  
   );
 }

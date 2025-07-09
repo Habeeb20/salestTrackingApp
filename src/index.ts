@@ -5,7 +5,7 @@ import cors from 'cors';
 import authRoutes from './routes/auth';
 import dealsRoutes from './routes/deals';
 import connectDb from './db';
-
+import morgan from 'morgan'
 dotenv.config();
 connectDb()
 const app: Express = express();
@@ -15,6 +15,7 @@ const PORT: number = parseInt(process.env.PORT || '3000', 10);
 app.use(cors({ origin:"*" }));
 // app.use(cors({ origin: process.env.CORS_ORIGINS?.split(',') }));
 app.use(express.json());
+app.use(morgan('dev'))
 
 // Routes
 app.get('/', (req: Request, res: Response) => {

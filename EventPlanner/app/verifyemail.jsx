@@ -12,13 +12,11 @@ const VerifyEmail = () => {
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
-  const [email, setEmail] = useState('');
   const [role, setRole] = useState('');
   const router = useRouter();
   const inputRefs = otp.map(() => createRef());
 
-
-  // Animation for logo (same as SignupScreen)
+  // Animation for logo
   const bounce = useSharedValue(0);
   useEffect(() => {
     bounce.value = withRepeat(
@@ -32,14 +30,13 @@ const VerifyEmail = () => {
     transform: [{ translateY: bounce.value }],
   }));
 
-  // Retrieve email and role from AsyncStorage
+  // Retrieve role from AsyncStorage
   useEffect(() => {
     const fetchUserData = async () => {
       try {
         const userString = await AsyncStorage.getItem('user');
         if (userString) {
           const user = JSON.parse(userString);
-          setEmail(user.email || '');
           setRole(user.role || '');
         } else {
           Toast.show({
@@ -64,8 +61,6 @@ const VerifyEmail = () => {
   }, [router]);
 
   // Handle OTP input
-
-  
   const handleOtpChange = (text, index) => {
     if (!/^\d?$/.test(text)) return;
     const newOtp = [...otp];
@@ -79,7 +74,6 @@ const VerifyEmail = () => {
     }
   };
 
-  // Handle OTP submission
   const handleVerify = async () => {
     if (otp.some((digit) => !digit)) {
       Toast.show({
@@ -94,7 +88,38 @@ const VerifyEmail = () => {
     setIsSubmitting(true);
     try {
       const code = otp.join('');
-      const response = await api.post('/verifyemail', { email, code });
+      console.log('OTP code:', code);
+
+      // Retrieve and validate email from AsyncStorage
+      const userEmail = await AsyncStorage.getItem('email');
+      console.log('Raw email from AsyncStorage:', userEmail);
+
+      if (!userEmail) {
+        throw new Error('Email not found in AsyncStorage');
+      }
+
+      // Parse JSON string if necessary
+      let email;
+      try {
+        email = JSON.parse(userEmail); // Handle JSON-serialized string
+      } catch (parseError) {
+        email = userEmail; // Assume plain string if parsing fails
+      }
+
+      // Validate email is a string
+      if (typeof email !== 'string') {
+        throw new Error('Email is not a string: ' + JSON.stringify(email));
+      }
+
+      email = email.trim();
+      console.log('Processed email:', email);
+
+      // Log payload before sending
+      const payload = { email, code };
+      console.log('Sending request with:', payload);
+
+      // Make API request
+      const response = await api.post('/api/auth/verify-email', payload);
       await AsyncStorage.setItem('token', response.data.token);
       await AsyncStorage.setItem('user', JSON.stringify(response.data.user));
       Toast.show({
@@ -103,12 +128,13 @@ const VerifyEmail = () => {
         textBody: 'Email verified successfully!',
         autoClose: 3000,
       });
-      router.push('/');
-    } catch (err) {
+      router.push('/login');
+    } catch (error) {
+      console.error('Verification error:', error.message || error);
       Toast.show({
         type: ALERT_TYPE.DANGER,
         title: 'Error',
-        textBody: err.response?.data?.message || 'Verification failed',
+        textBody: error.response?.data?.message || 'Verification failed',
         autoClose: 3000,
       });
     } finally {
@@ -119,20 +145,37 @@ const VerifyEmail = () => {
   // Handle resend OTP
   const handleResend = async () => {
     if (resendCooldown > 0) return;
-    setResendCooldown(60); // 60-second cooldown
+    setResendCooldown(60);
     try {
-      await api.post('/sendOtp', { email });
+      // Retrieve email for resend
+      const userEmail = await AsyncStorage.getItem('email');
+      if (!userEmail) {
+        throw new Error('Email not found in AsyncStorage');
+      }
+      let email;
+      try {
+        email = JSON.parse(userEmail);
+      } catch (parseError) {
+        email = userEmail;
+      }
+      if (typeof email !== 'string') {
+        throw new Error('Email is not a string: ' + JSON.stringify(email));
+      }
+      email = email.trim();
+
+      await api.post('/api/auth/send-otp', { email }); // Adjust endpoint if needed
       Toast.show({
         type: ALERT_TYPE.SUCCESS,
         title: 'Success',
         textBody: 'Verification code resent successfully',
         autoClose: 3000,
       });
-    } catch (err) {
+    } catch (error) {
+      console.error('Resend OTP error:', error.message || error);
       Toast.show({
         type: ALERT_TYPE.DANGER,
         title: 'Error',
-        textBody: err.response?.data?.message || 'Failed to resend OTP',
+        textBody: error.response?.data?.message || 'Failed to resend OTP',
         autoClose: 3000,
       });
     }
@@ -210,13 +253,14 @@ const VerifyEmail = () => {
           {otp.map((digit, index) => (
             <TextInput
               key={index}
+              ref={inputRefs[index]}
               style={{
-                width: 40, 
+                width: 40,
                 backgroundColor: 'transparent',
                 borderWidth: 2,
                 borderStyle: 'solid',
                 borderColor: '#000080',
-                padding: 8, 
+                padding: 8,
                 borderRadius: 8,
                 color: '#ffffff',
                 fontSize: 16,
@@ -230,7 +274,6 @@ const VerifyEmail = () => {
               keyboardType="numeric"
               maxLength={1}
               accessibilityLabel={`OTP digit ${index + 1}`}
-         
             />
           ))}
         </View>

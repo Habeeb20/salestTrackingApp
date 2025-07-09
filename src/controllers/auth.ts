@@ -42,7 +42,20 @@ export const signup = async(req:Request, res:Response):Promise<void> => {
             })
 
             await newUser.save()
-            res.status(200).json({message: 'successfully saved', role: newUser.role, email:newUser.email})      
+            const response = await sendOTPEmail(
+              newUser.email,
+              verificationToken,
+              newUser.role
+            )
+            if(!response.success){
+              console.log("an error  occurred in sending otp", response.error)
+              res.json(400).json({message: "an error occured while sending otp to your mail"})
+            }
+
+            const payload = {user: {id:newUser._id}}
+            const token = jwt.sign(payload, process.env.JWT_SECRET as string, {expiresIn: '7d'})
+
+            res.status(200).json({message: 'successfully saved', token: token, role: newUser.role, email:newUser.email})      
             
         } catch (error){
             console.log(error)
@@ -160,7 +173,7 @@ export const login = async (
     const payload = { userId: user._id.toString(), email: user.email, role: user.role };
     const token = jwt.sign(payload, process.env.JWT_SECRET as string, { expiresIn: '1d' });
 
-    res.status(200).json({ accessToken: token });
+    res.status(200).json({ accessToken: token, user, role:user.role });
   } catch (err) {
     console.error('Login error:', err);
     res.status(500).json({ message: 'Internal server error' });

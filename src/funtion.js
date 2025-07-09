@@ -7,8 +7,8 @@ const transporter = nodemailer.createTransport({
     port: 587,
     secure: false,
     auth: {
-        user:"essentialdevelopers22@gmail.com",
-        pass:"jiaxdjpmgndjujhr"
+        user:process.env.EMAIL_USER,
+        pass:process.env.EMAIL_PASS,
       },
 })
 
@@ -17,7 +17,7 @@ export const sendOTPEmail = async(email, otp, role) => {
     const mailOptions = {
         from: process.env.EMAIL_USER,
         to: email,
-        subject:"verify your email",
+        subject:`verify your email @ ${email} role: ${role} your otp code is   ${otp}`,
            html: `
           <!DOCTYPE html>
           <html lang="en">
