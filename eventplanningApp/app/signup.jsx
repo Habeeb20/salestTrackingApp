@@ -343,7 +343,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import api from './api';
 import { ALERT_TYPE, AlertNotificationRoot, Toast } from 'react-native-alert-notification';
 
-export default function SignupScreen() {
+export default function Signup() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState('client');
@@ -398,7 +398,7 @@ export default function SignupScreen() {
   };
 
   return (
- 
+    <AlertNotificationRoot>
          <SafeAreaView style={{ flex: 1, backgroundColor: '#1C2526' }}>
       <View style={{ padding: 24, paddingTop: 40 }}>
         <View style={{ alignItems: 'center', marginBottom: 24 }}>
@@ -578,7 +578,7 @@ export default function SignupScreen() {
       </View>
     </SafeAreaView>
 
-
+    </AlertNotificationRoot>
  
   );
 }

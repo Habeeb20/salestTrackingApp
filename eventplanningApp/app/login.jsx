@@ -8,7 +8,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import api from "./api"
 import { ALERT_TYPE, AlertNotificationRoot, Toast } from 'react-native-alert-notification';
 
-export default function LoginScreen() {
+export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -54,7 +54,7 @@ export default function LoginScreen() {
 
 
   return (
- 
+  
         <SafeAreaView style={{ flex: 1, backgroundColor:'#1C2526' }}>
       <View style={{ padding: 24, paddingTop: 40 }}>
         <View style={{ alignItems: 'center', marginBottom: 104 }}>
@@ -195,7 +195,7 @@ export default function LoginScreen() {
       </View>
     </SafeAreaView>
 
-
+  
   
   );
 }

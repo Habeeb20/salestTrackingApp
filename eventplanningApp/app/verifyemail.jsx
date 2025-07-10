@@ -239,7 +239,7 @@ const VerifyEmail = () => {
             textAlign: 'center',
           }}
         >
-      
+          Verify Your Email
         </Text>
 
         {/* OTP Inputs */}
@@ -248,7 +248,6 @@ const VerifyEmail = () => {
             flexDirection: 'row',
             justifyContent: 'space-between',
             marginBottom: 16,
-            marginTop:20
           }}
         >
           {otp.map((digit, index) => (
