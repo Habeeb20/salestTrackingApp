@@ -249,7 +249,7 @@ const Userdashboard = () => {
       </ScrollView>
 
       {/* Bottom Navigation */}
-      <View
+      {/* <View
         style={{
           flexDirection: 'row',
           justifyContent: 'space-around',
@@ -340,7 +340,7 @@ const Userdashboard = () => {
             Profile
           </Text>
         </Pressable>
-      </View>
+      </View> */}
     </SafeAreaView>
   );
 };

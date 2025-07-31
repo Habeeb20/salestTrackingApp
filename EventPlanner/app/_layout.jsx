@@ -1,6 +1,6 @@
 import { Stack } from 'expo-router';
 import { NativeWindStyleSheet } from 'nativewind';
-
+import FooterNav from "./FooterNav"
 
 // Configure NativeWindStyleSheet for native output
 if (NativeWindStyleSheet && typeof NativeWindStyleSheet.setOutput === 'function') {
@@ -11,7 +11,7 @@ if (NativeWindStyleSheet && typeof NativeWindStyleSheet.setOutput === 'function'
 
 export default function Layout() {
   return (
- 
+ <>
       <Stack>
         <Stack.Screen
           name="index"
@@ -66,8 +66,8 @@ export default function Layout() {
             headerShadowVisible: false,
           }}
         />
-        {/* <Stack.Screen
-          name="userDashboard"
+        <Stack.Screen
+          name="dashboard"
           options={{
             title: 'Dashboard',
             headerStyle: { backgroundColor: '#1C2526' },
@@ -76,9 +76,22 @@ export default function Layout() {
             headerTitleAlign: 'center',
             headerShadowVisible: false,
           }}
-        /> */}
+        />
+
+        <Stack.Screen
+        name='actions'
+        options={{
+          title:'Actions',
+          headerStyle:{backgroundColor: "black"},
+            headerTitleStyle: { fontSize: 28, fontWeight: 'bold', color: '#87BCFF' },
+            headerTintColor: '#87BCFF',
+            headerTitleAlign: 'center',
+            headerShadowVisible: false,
+        }}
+         />
+      
       </Stack>
-  
- 
+  <FooterNav/>
+ </>
   );
 }

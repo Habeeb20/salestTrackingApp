@@ -173,7 +173,7 @@ export const login = async (
     const payload = { userId: user._id.toString(), email: user.email, role: user.role };
     const token = jwt.sign(payload, process.env.JWT_SECRET as string, { expiresIn: '1d' });
 
-    res.status(200).json({ accessToken: token, user, role:user.role });
+    res.status(200).json({token: token, user, role:user.role });
   } catch (err) {
     console.error('Login error:', err);
     res.status(500).json({ message: 'Internal server error' });

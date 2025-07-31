@@ -8,7 +8,7 @@ import { Toast, ALERT_TYPE } from 'react-native-alert-notification';
 
 const screenWidth = Dimensions.get('window').width;
 
-const Userdashboard = () => {
+const Eventplannerdashboard = () => {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState('dashboard');
 
@@ -105,7 +105,7 @@ const Userdashboard = () => {
             textAlign: 'center',
           }}
         >
-          Dashboard
+          planner Dashboard
         </Text>
 
         {/* Pie Chart */}
@@ -345,4 +345,4 @@ const Userdashboard = () => {
   );
 };
 
-export default Userdashboard;
+export default Eventplannerdashboard;

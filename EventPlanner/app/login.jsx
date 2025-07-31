@@ -44,7 +44,12 @@ export default function LoginScreen() {
         title: 'Success',
         text: 'Successfully signed up, please log in',
       });
-      router.push('/userdashboard');
+      if(response.data.user.role === "client"){
+           router.push('/dashboard');
+      } else {
+        router.push("/eventplannerdashboard")
+      }
+     
     } catch (err) {
       setError(err.response?.data?.error || 'Login failed');
     }
