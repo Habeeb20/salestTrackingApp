@@ -13,7 +13,8 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "foregroundImage": "./assets/images/images/event.jpeg",
+           "reSizeMode": "cover",
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true
@@ -24,7 +25,9 @@
       "favicon": "./assets/images/favicon.png"
     },
       "extra": {
-      "apiBaseUrl": "http://localhost:8000"
+      // "apiBaseUrl": "https://salesttrackingapp.onrender.com/"
+      "API_BASE_URL": "http://localhost:8000",
+       "apiBaseUrl":"http://localhost:8000",
     },
     "plugins": [
       "expo-router",

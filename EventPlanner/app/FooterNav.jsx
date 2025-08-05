@@ -125,6 +125,26 @@ const FooterNav = () => {
           Profile
         </Text>
       </Pressable>
+      <Pressable
+        onPress={() => handleNavigation('logout')}
+        style={{
+          padding: 10,
+          backgroundColor: activeTab === 'logout' ? '#87BCFF' : 'transparent',
+          borderRadius: 8,
+          alignItems: 'center',
+        }}
+      >
+        <Icon name="logout" size={24} color={activeTab === 'logout' ? '#FFFFFF' : '#87BCFF'} />
+        <Text
+          style={{
+            color: activeTab === 'logout' ? '#FFFFFF' : '#87BCFF',
+            fontSize: 12,
+            textAlign: 'center',
+          }}
+        >
+          Logout
+        </Text>
+      </Pressable>
     </View>
   );
 };

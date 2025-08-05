@@ -1,6 +1,8 @@
 import { Stack } from 'expo-router';
 import { NativeWindStyleSheet } from 'nativewind';
 import FooterNav from "./FooterNav"
+import ThemeProvider from './utils/themeprovider';
+
 
 // Configure NativeWindStyleSheet for native output
 if (NativeWindStyleSheet && typeof NativeWindStyleSheet.setOutput === 'function') {
@@ -12,6 +14,8 @@ if (NativeWindStyleSheet && typeof NativeWindStyleSheet.setOutput === 'function'
 export default function Layout() {
   return (
  <>
+ <ThemeProvider>
+
       <Stack>
         <Stack.Screen
           name="index"
@@ -83,15 +87,52 @@ export default function Layout() {
         options={{
           title:'Actions',
           headerStyle:{backgroundColor: "black"},
-            headerTitleStyle: { fontSize: 28, fontWeight: 'bold', color: '#87BCFF' },
+            headerTitleStyle: { fontSize: 20, fontWeight: 'semibold', color: '#87BCFF' },
             headerTintColor: '#87BCFF',
             headerTitleAlign: 'center',
             headerShadowVisible: false,
         }}
          />
+
+         <Stack.Screen 
+          name='planners'
+          options={{
+            title:'Planners',
+               headerStyle:{backgroundColor: "black"},
+               headerTitleStyle: { fontSize: 20, fontWeight: 'semibold', color: '#87BCFF' },
+               headerTintColor: '#87BCFF',
+               headerTitleAlign: 'center',
+               headerShadowVisible: false,
+          }}
+         />
+      
+         <Stack.Screen 
+          name='profile'
+          options={{
+            title:'Profile',
+               headerStyle:{backgroundColor: "black"},
+               headerTitleStyle: { fontSize: 20, fontWeight: 'semibold', color: '#87BCFF' },
+               headerTintColor: '#87BCFF',
+               headerTitleAlign: 'center',
+               headerShadowVisible: false,
+          }}
+         />
+      
+         <Stack.Screen 
+          name='logout'
+          options={{
+            title:'Logout',
+               headerStyle:{backgroundColor: "black"},
+               headerTitleStyle: { fontSize: 20, fontWeight: 'semibold', color: '#87BCFF' },
+               headerTintColor: '#87BCFF',
+               headerTitleAlign: 'center',
+               headerShadowVisible: false,
+          }}
+         />
       
       </Stack>
-  <FooterNav/>
+ 
+</ThemeProvider>
  </>
   );
 }

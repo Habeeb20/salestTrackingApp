@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { check } from "express-validator";
-import { ForgotPassword, login, resetPassword, sendOtp, signup, verifyEmail } from "../controllers/auth";
+import { dashboard, ForgotPassword, login, resetPassword, sendOtp, signup, verifyEmail } from "../controllers/auth";
+import { authMiddleware } from "../middleware/auth";
 
 
 const router = Router()
@@ -24,6 +25,8 @@ router.post('/login', [
     check('password', 'password must not be less than 6 characters').isLength({min: 6}),
 ], login,)
 
+
+router.get('/dashboard', authMiddleware, dashboard)
 
 
 router.post(

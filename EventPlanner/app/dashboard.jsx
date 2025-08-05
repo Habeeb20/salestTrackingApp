@@ -1,23 +1,100 @@
-import React, { useState } from 'react';
-import { View, Text, Pressable, Dimensions, ScrollView } from 'react-native';
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import  { useState, useEffect } from 'react';
+import { View, Text, Pressable, Dimensions, ScrollView, StyleSheet, ActivityIndicator, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { PieChart } from 'react-native-chart-kit';
 import { Toast, ALERT_TYPE } from 'react-native-alert-notification';
+import { useTheme } from './utils/themeprovider';
+import { Switch } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import withAuth from './utils/withAuth';
+import FooterNav from "./FooterNav"
+import Constants from 'expo-constants';
+import api from './api';
 
 const screenWidth = Dimensions.get('window').width;
+const API_BASE_URL = Constants.expoConfig?.extra?.API_BASE_URL || 'http://localhost:8000'; 
 
 const Userdashboard = () => {
   const router = useRouter();
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(true);
+  const { isDarkTheme, toggleTheme, theme } = useTheme();
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [user, setUser] = useState({});
+  const [dashboardData, setDashboardData] = useState({
+    jobStats: [
+      { name: 'Completed', value: 60, color: '#87BCFF', legendFontColor: '#FFFFFF', legendFontSize: 14 },
+      { name: 'Ongoing', value: 30, color: '#4169E1', legendFontColor: '#FFFFFF', legendFontSize: 14 },
+      { name: 'Pending', value: 10, color: '#000080', legendFontColor: '#FFFFFF', legendFontSize: 14 },
+    ],
+    earnings: { amount: 45.20, location: 'Surulere' },
+    jobCount: { count: 12, location: 'Surulere' },
+  });
 
-  // Pie chart data (sample job statuses)
-  const chartData = [
-    { name: 'Completed', value: 60, color: '#87BCFF', legendFontColor: '#FFFFFF', legendFontSize: 14 },
-    { name: 'Ongoing', value: 30, color: '#4169E1', legendFontColor: '#FFFFFF', legendFontSize: 14 },
-    { name: 'Pending', value: 10, color: '#000080', legendFontColor: '#FFFFFF', legendFontSize: 14 },
-  ];
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        const token = await AsyncStorage.getItem('token');
+        if (!token) {
+          console.log("token error here")
+          router.push('/login');
+          return;
+        }
+
+        const response = await api.get('/api/auth/dashboard');
+
+       
+        if (response.status === 200) {
+          setUser(response.data.data.user);
+          console.log(response.data.data.user, "my details")
+          setDashboardData({
+            jobStats: response.data.data.jobStats,
+            earnings: response.data.data.earnings,
+            jobCount: response.data.data.jobCount,
+          });
+        } else {
+          console.log("an error is here 1")
+          setError(result.message || 'Failed to fetch dashboard data');
+          router.push('/login');
+        }
+      } catch (err) {
+        console.log("an error is here 2")
+        setError('Failed to fetch dashboard data');
+        console.error('Dashboard fetch error:', err);
+        router.push('/login');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+  }, []);
+
+ 
+  const displayEmail = user.email ? user.email.split('@')[0] : 'User';
+
+  // Pie chart data (use dynamic data from backend)
+  const chartData = dashboardData.jobStats;
 
   // Navigation handler
   const navigateTo = (screen) => {
@@ -40,23 +117,30 @@ const Userdashboard = () => {
     }
   };
 
+  if (loading) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: theme.backgroundColor }}>
+        <ActivityIndicator size="large" color={theme.textColor} />
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: theme.backgroundColor }}>
+        <Text style={{ color: theme.textColor }}>{error}</Text>
+      </View>
+    );
+  }
+
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#1C2526' }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: theme.backgroundColor }}>
       {/* Top Navigation */}
       <View
-        style={{
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-          padding: 16,
-          backgroundColor: '#000080',
-          borderBottomLeftRadius: 20,
-          borderBottomRightRadius: 20,
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.3,
-          shadowRadius: 4,
-          elevation: 5,
-        }}
+        style={[
+          styles.topNav,
+          Platform.OS === 'web' ? styles.webShadow : styles.nativeShadow,
+        ]}
       >
         <Pressable
           onPress={() => handleNavigation('settings')}
@@ -105,23 +189,29 @@ const Userdashboard = () => {
             textAlign: 'center',
           }}
         >
-          Dashboard
+          Dashboard - {displayEmail}
         </Text>
+
+        <View style={styles.switchContainer}>
+          <Text style={[styles.label, { color: theme.textColor }]}>
+            {isDarkTheme ? 'Dark Theme' : 'Light Theme'}
+          </Text>
+          <Switch
+            value={isDarkTheme}
+            onValueChange={toggleTheme}
+            trackColor={{ false: '#767577', true: '#000080' }}
+            thumbColor={isDarkTheme ? '#FFFFFF' : '#000000'}
+            ios_backgroundColor="#767577"
+            style={styles.switch}
+          />
+        </View>
 
         {/* Pie Chart */}
         <View
-          style={{
-            marginBottom: 24,
-            alignItems: 'center',
-            backgroundColor: '#000080',
-            borderRadius: 12,
-            padding: 16,
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.3,
-            shadowRadius: 4,
-            elevation: 5,
-          }}
+          style={[
+            styles.chartContainer,
+            Platform.OS === 'web' ? styles.webShadow : styles.nativeShadow,
+          ]}
         >
           <Text
             style={{
@@ -158,18 +248,10 @@ const Userdashboard = () => {
         >
           {/* Earnings Box */}
           <View
-            style={{
-              flex: 1,
-              backgroundColor: '#000080',
-              borderRadius: 12,
-              padding: 16,
-              marginRight: 8,
-              shadowColor: '#000',
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.3,
-              shadowRadius: 4,
-              elevation: 5,
-            }}
+            style={[
+              styles.box,
+              Platform.OS === 'web' ? styles.webShadow : styles.nativeShadow,
+            ]}
           >
             <Text
               style={{
@@ -188,7 +270,7 @@ const Userdashboard = () => {
                 color: '#FFFFFF',
               }}
             >
-              $45.20
+              ${dashboardData.earnings.amount.toFixed(2)}
             </Text>
             <Text
               style={{
@@ -197,24 +279,16 @@ const Userdashboard = () => {
                 opacity: 0.7,
               }}
             >
-              Total earnings in Surulere
+              Total earnings in {dashboardData.earnings.location}
             </Text>
           </View>
 
           {/* Job Count Box */}
           <View
-            style={{
-              flex: 1,
-              backgroundColor: '#000080',
-              borderRadius: 12,
-              padding: 16,
-              marginLeft: 8,
-              shadowColor: '#000',
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.3,
-              shadowRadius: 4,
-              elevation: 5,
-            }}
+            style={[
+              styles.box,
+              Platform.OS === 'web' ? styles.webShadow : styles.nativeShadow,
+            ]}
           >
             <Text
               style={{
@@ -233,7 +307,7 @@ const Userdashboard = () => {
                 color: '#FFFFFF',
               }}
             >
-              12
+              {dashboardData.jobCount.count}
             </Text>
             <Text
               style={{
@@ -242,107 +316,80 @@ const Userdashboard = () => {
                 opacity: 0.7,
               }}
             >
-              Active jobs in Surulere
+              Active jobs in {dashboardData.jobCount.location}
             </Text>
           </View>
         </View>
       </ScrollView>
-
-      {/* Bottom Navigation */}
-      {/* <View
-        style={{
-          flexDirection: 'row',
-          justifyContent: 'space-around',
-          padding: 10,
-          backgroundColor: '#000080',
-          borderTopLeftRadius: 20,
-          borderTopRightRadius: 20,
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: -2 },
-          shadowOpacity: 0.3,
-          shadowRadius: 4,
-          elevation: 5,
-        }}
-      >
-        <Pressable
-          onPress={() => handleNavigation('dashboard')}
-          style={{
-            padding: 10,
-            backgroundColor: activeTab === 'dashboard' ? '#87BCFF' : 'transparent',
-            borderRadius: 8,
-          }}
-        >
-          <Icon name="dashboard" size={24} color={activeTab === 'dashboard' ? '#FFFFFF' : '#87BCFF'} />
-          <Text
-            style={{
-              color: activeTab === 'dashboard' ? '#FFFFFF' : '#87BCFF',
-              fontSize: 12,
-              textAlign: 'center',
-            }}
-          >
-            Dashboard
-          </Text>
-        </Pressable>
-        <Pressable
-          onPress={() => handleNavigation('actions')}
-          style={{
-            padding: 10,
-            backgroundColor: activeTab === 'actions' ? '#87BCFF' : 'transparent',
-            borderRadius: 8,
-          }}
-        >
-          <Icon name="build" size={24} color={activeTab === 'actions' ? '#FFFFFF' : '#87BCFF'} />
-          <Text
-            style={{
-              color: activeTab === 'actions' ? '#FFFFFF' : '#87BCFF',
-              fontSize: 12,
-              textAlign: 'center',
-            }}
-          >
-            Actions
-          </Text>
-        </Pressable>
-        <Pressable
-          onPress={() => handleNavigation('planners')}
-          style={{
-            padding: 10,
-            backgroundColor: activeTab === 'planners' ? '#87BCFF' : 'transparent',
-            borderRadius: 8,
-          }}
-        >
-          <Icon name="event" size={24} color={activeTab === 'planners' ? '#FFFFFF' : '#87BCFF'} />
-          <Text
-            style={{
-              color: activeTab === 'planners' ? '#FFFFFF' : '#87BCFF',
-              fontSize: 12,
-              textAlign: 'center',
-            }}
-          >
-            Planners
-          </Text>
-        </Pressable>
-        <Pressable
-          onPress={() => handleNavigation('profile')}
-          style={{
-            padding: 10,
-            backgroundColor: activeTab === 'profile' ? '#87BCFF' : 'transparent',
-            borderRadius: 8,
-          }}
-        >
-          <Icon name="person" size={24} color={activeTab === 'profile' ? '#FFFFFF' : '#87BCFF'} />
-          <Text
-            style={{
-              color: activeTab === 'profile' ? '#FFFFFF' : '#87BCFF',
-              fontSize: 12,
-              textAlign: 'center',
-            }}
-          >
-            Profile
-          </Text>
-        </Pressable>
-      </View> */}
+       <FooterNav/>
     </SafeAreaView>
   );
 };
 
-export default Userdashboard;
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  text: {
+    fontSize: 20,
+    marginBottom: 20,
+  },
+  switchContainer: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    margin: 16,
+  },
+  label: {
+    fontSize: 16,
+    marginRight: 10,
+  },
+  switch: {
+    transform: [{ scaleX: 1.2 }, { scaleY: 1.2 }],
+  },
+  topNav: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    padding: 16,
+    backgroundColor: '#000080',
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+  },
+  chartContainer: {
+    marginBottom: 24,
+    alignItems: 'center',
+    backgroundColor: '#000080',
+    borderRadius: 12,
+    padding: 16,
+  },
+  box: {
+    flex: 1,
+    backgroundColor: '#000080',
+    borderRadius: 12,
+    padding: 16,
+    marginHorizontal: 8,
+  },
+  webShadow: {
+    boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.15)', // Already correct for web
+  },
+  nativeShadow: {
+    // Removed deprecated shadow* props
+    // shadowColor: '#000',
+    // shadowOffset: { width: 0, height: 4 },
+    // shadowOpacity: 0.2,
+    // shadowRadius: 8,
+    // elevation: 6,
+    // Use boxShadow for consistency across platforms
+    boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.15)', // Added for native platforms
+  },
+  cardText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
+    marginTop: 12,
+    textAlign: 'center',
+  },
+});
+
+export default withAuth(Userdashboard);

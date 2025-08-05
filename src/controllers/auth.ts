@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import { validationResult } from "express-validator";
 import bcrypt from "bcryptjs"
 import jwt from "jsonwebtoken"
@@ -6,9 +6,15 @@ import User, { IUser } from "../models/user";
 import nodemailer from "nodemailer"
 import crypto from "crypto"
 import { sendOTPEmail } from "../funtion";
+
 interface LoginBody {
   email: string;
   password: string;
+}
+
+
+interface AuthRequest extends Request {
+  user?: { userId: string; email: string; role: string };
 }
 
 export const signup = async(req:Request, res:Response):Promise<void> => {
@@ -180,6 +186,51 @@ export const login = async (
   }
 };
 
+export const dashboard = async(req:AuthRequest, res:Response, ): Promise<void> => {
+try {
+  const userId = req.user?.userId
+  if(!userId){
+    res.status(401).json({message: "unauthorized"})
+    return
+  }
+
+  const user: IUser | null = await User.findById(userId).select('-password')
+  if(!user){
+    res.status(404).json({message: "user not found"})
+    return
+  }
+
+    const dashboardData = {
+      user: {
+        id: user._id,
+        email: user.email,
+        role: user.role,
+        uniqueNumber: user.uniqueNumber,
+        isVerified: user.isVerified,
+      },
+      // Sample dynamic data for pie chart and boxes
+      jobStats: [
+        { name: 'Completed', value: 60, color: '#87BCFF', legendFontColor: '#FFFFFF', legendFontSize: 14 },
+        { name: 'Ongoing', value: 30, color: '#4169E1', legendFontColor: '#FFFFFF', legendFontSize: 14 },
+        { name: 'Pending', value: 10, color: '#000080', legendFontColor: '#FFFFFF', legendFontSize: 14 },
+      ],
+      earnings: {
+        amount: 45.20,
+        location: 'Surulere',
+      },
+      jobCount: {
+        count: 12,
+        location: 'Surulere',
+      },
+    };
+
+    res.status(200).json({ message: 'Dashboard data retrieved', data: dashboardData });
+} catch (error) {
+  console.error('dashboard error', error)
+  res.status(500).json({message: 'internal server error'})
+}
+}
+
 
 
 
@@ -291,3 +342,35 @@ export const resetPassword = async (
     res.status(500).json({ message: 'Internal server error' });
   }
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
