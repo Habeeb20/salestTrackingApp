@@ -25,9 +25,10 @@
       "favicon": "./assets/images/favicon.png"
     },
       "extra": {
-      // "apiBaseUrl": "https://salesttrackingapp.onrender.com/"
-      "API_BASE_URL": "http://localhost:8000",
-       "apiBaseUrl":"http://localhost:8000",
+      "apiBaseUrl": "https://salesttrackingapp.onrender.com/",
+      "API_BASE_URL": "https://salesttrackingapp.onrender.com/"
+      // "API_BASE_URL": "http://localhost:8000",
+      //  "apiBaseUrl":"http://localhost:8000",
     },
     "plugins": [
       "expo-router",
